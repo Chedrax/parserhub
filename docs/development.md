@@ -65,6 +65,67 @@ The `typing` module should still be used when it provides functionality that doe
 from typing import Literal, Protocol, TypeVar, TypedDict
 ```
 
+## Tooling & Environment
+
+The backend environment and development tools are managed with **uv**.
+
+`uv` is the required package and environment manager for the backend.
+
+Backend dependencies must be installed and synchronized using:
+
+```bash
+cd backend
+uv sync
+```
+
+Backend development tools should be executed through `uv`:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy .
+uv run pytest
+```
+
+Do not rely on globally installed Python packages or tools for backend development. This ensures that local development uses the versions declared in `pyproject.toml` and locked in `uv.lock`.
+
+The `uv.lock` file must be committed to the repository and kept synchronized with `pyproject.toml`.
+
+### Pre-commit Setup
+
+ParserHub uses `pre-commit` for local automated checks.
+
+The pre-commit configuration is stored in the repository root:
+
+```text
+.pre-commit-config.yaml
+```
+
+After cloning the repository, developers must manually install the Git hooks:
+
+```bash
+uv run --directory backend pre-commit install
+```
+
+This step cannot be performed automatically by the repository configuration itself because Git hooks are installed into the local `.git/hooks` directory and are not tracked by Git.
+
+The installed hook runs automatically before commits and validates:
+
+* Ruff linting;
+* Ruff formatting;
+* commit message format.
+
+The hooks can also be executed manually for the entire repository:
+
+```bash
+uv run --directory backend pre-commit run --all-files
+```
+
+If the repository is cloned on a new machine, the pre-commit hook must be installed again.
+
+CI does not depend on the locally installed Git hooks. GitHub Actions runs the required checks independently, so bypassing or missing local hooks does not bypass CI validation.
+
+
 ## Code Quality
 
 ### Backend
@@ -76,14 +137,21 @@ The backend uses:
 * pytest for testing.
 * pre-commit for local automated checks.
 
-Before creating a commit, code should pass:
+Before creating a commit, the following backend checks should pass:
 
 ```bash
+cd backend
+
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy .
 uv run pytest
 ```
+
+The pre-commit hook automatically runs the fast local checks before a commit is created. Developers should still be able to run the full check suite manually before pushing changes.
+
+The commit message is also validated by the pre-commit `commit-msg` hook according to the project's Conventional Commits rules.
+
 
 ### Frontend
 
@@ -331,3 +399,7 @@ can be used in the PR description when the Pull Request completely resolves the 
 * Avoid mixing unrelated changes in a single commit.
 * Prefer small, understandable Pull Requests.
 * Update documentation when a development or architectural rule changes.
+* Use `uv` for all backend dependency management and development commands.
+* Do not install project development tools globally when they are available through the project's `uv` environment.
+* Keep `pyproject.toml` and `uv.lock` synchronized.
+* Install the pre-commit Git hooks after cloning the repository or setting up a new development environment.
