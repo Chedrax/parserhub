@@ -14,6 +14,26 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: parserhub
+          POSTGRES_PASSWORD: parserhub
+          POSTGRES_DB: parserhub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U parserhub -d parserhub"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://parserhub:parserhub@localhost:5432/parserhub
+      SECRET_KEY: test-secret-key
+      ENVIRONMENT: development
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
