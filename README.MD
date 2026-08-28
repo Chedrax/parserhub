@@ -32,8 +32,6 @@ Implemented:
 
 * project structure;
 * FastAPI backend foundation;
-* Next.js frontend foundation;
-* PostgreSQL integration foundation;
 * `uv` dependency management;
 * Ruff linting and formatting;
 * mypy static type checking;
@@ -44,6 +42,8 @@ Implemented:
 
 Currently under development:
 
+* Next.js frontend foundation;
+* PostgreSQL integration foundation;
 * user authentication;
 * database models;
 * API structure;

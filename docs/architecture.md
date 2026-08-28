@@ -2,24 +2,47 @@
 # Architecture
 
 
-## Overview
+## Current architecture
 
 ```
-ParserHub follows layered architecture.
-
 Frontend
-    |
-    |
-API Layer
-    |
-    |
-Service Layer
-    |
-    |
-Repository Layer
-    |
-    |
+   │
+   ▼
+FastAPI
+   │
+   ▼
+Application
+   │
+   ▼
 Database
+```
+
+## Target architecture
+
+```
+Frontend
+   │
+   ▼
+API
+   │
+   ▼
+Services
+   │
+   ├───────────────┐
+   ▼               ▼
+Repositories    Task Queue
+   │               │
+   ▼               ▼
+PostgreSQL       Workers
+                   │
+                   ▼
+                Parsers
+                   │
+                   ▼
+                Pipeline
+                   │
+                   ▼
+               PostgreSQL
 ```
 
 ---
