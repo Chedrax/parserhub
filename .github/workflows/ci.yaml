@@ -31,7 +31,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql+asyncpg://parserhub:parserhub@localhost:5432/parserhub
-      SECRET_KEY: test-secret-key
+      SECRET_KEY: parserhub-ci-test-secret-key-2026-long-enough
       ENVIRONMENT: development
 
     steps:
