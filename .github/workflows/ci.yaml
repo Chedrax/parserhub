@@ -53,6 +53,10 @@ jobs:
         working-directory: backend
         run: uv sync --locked
 
+      - name: Run database migrations
+        working-directory: backend
+        run: uv run alembic upgrade head
+
       - name: Run Ruff
         working-directory: backend
         run: uv run ruff check .
