@@ -285,11 +285,11 @@ CORS should be configured through environment-specific settings and should not r
 **Status: Partially Completed**
 
 * [x] `/health`
-* [ ] `/version`
+* [x] `/version`
 
 The health endpoint provides a simple application health check.
 
-A version endpoint may be added before the final Stage 1 integration if it provides value for deployment and diagnostics.
+The version endpoint provides the current project version and environment type.
 
 ---
 

@@ -134,58 +134,153 @@ The API layer is responsible for HTTP-specific concerns.
 
 Responsibilities:
 
-* HTTP requests;
-* API routing;
-* request validation;
-* response serialization;
-* authentication endpoints;
-* dependency injection;
-* mapping application results to API responses.
+- HTTP requests;
+- API routing;
+- request validation;
+- response serialization;
+- authentication endpoints;
+- dependency injection;
+- mapping application results to API responses.
 
 Technology:
 
-* FastAPI.
+- FastAPI.
+
+The API is organized into a root router, operational endpoints, and versioned API routers.
 
 Current implementation:
 
 ```text
 backend/src/parserhub/api/
-├── v1/
-│   ├── router.py
-│   └── endpoints/
-│       ├── auth.py
-│       └── users.py
+
+├── router.py
+├── health.py
+├── version.py
+└── v1/
+    ├── router.py
+    └── endpoints/
+        ├── auth.py
+        └── users.py
 ```
 
-The API is versioned using `/api/v1`.
+The root API router is responsible for assembling the complete API.
 
-Endpoints should remain thin and should delegate application logic to services.
+Versioned application endpoints are mounted under /api/v1.
+
+Operational endpoints such as /health and /version are kept outside the versioned API because they describe the availability and metadata of the running application rather than a versioned business API contract.
+
+API endpoints should remain thin and should delegate application logic to services.
 
 ---
 
+```markdown
 ## API Versioning
 
-ParserHub uses explicit API versioning.
+ParserHub uses explicit URL-based API versioning for application endpoints.
 
-Current version:
+Current API version:
 
 ```text
 /api/v1
+
+The API routing hierarchy is:
+
+api/router.py
+    │
+    ▼
+/api/v1
+    │
+    ▼
+api/v1/router.py
+    │
+    ├── /auth
+    │
+    └── /users
 ```
 
-The versioned API router is implemented in:
+The versioned router is implemented in:
 
-```text
-backend/src/parserhub/api/v1/router.py
-```
+
+`backend/src/parserhub/api/v1/router.py`
+
+The root API router is implemented in:
+
+`backend/src/parserhub/api/router.py`
 
 Endpoint implementations are located in:
 
+`backend/src/parserhub/api/v1/endpoints/`
+
+Current application endpoints include:
+
 ```text
-backend/src/parserhub/api/v1/endpoints/
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+GET  /api/v1/users/me
 ```
 
-Future breaking API changes should be introduced through a new API version rather than silently changing the existing contract.
+Operational endpoints are intentionally kept outside the versioned API:
+
+```text
+GET /health
+GET /version
+```
+
+Future breaking changes to the application API should be introduced through a new API version rather than silently changing the existing contract.
+
+---
+
+```markdown
+## Operational Endpoints
+
+ParserHub provides a small set of endpoints for application health and runtime metadata.
+
+These endpoints are not part of the versioned application API.
+
+### Health
+
+```text
+GET /health
+```
+
+The health endpoint verifies that the application process is available.
+
+Implementation:
+
+`backend/src/parserhub/api/health.py`
+
+Schema:
+
+`backend/src/parserhub/schemas/health.py`
+
+Response:
+
+```JSON
+{
+    "status": "ok"
+}
+```
+
+### Version
+```text
+GET /version
+```
+
+The version endpoint exposes the current ParserHub application version and runtime environment.
+
+Implementation:
+
+`backend/src/parserhub/api/version.py`
+
+Schema:
+
+`backend/src/parserhub/schemas/version.py`
+
+The application version is maintained as package metadata rather than duplicated in environment configuration.
+
+Version-related functionality is implemented in:
+
+`backend/src/parserhub/core/version.py`
 
 ---
 
@@ -299,17 +394,20 @@ Current implementation:
 
 ```text
 backend/src/parserhub/schemas/
+
 ├── auth.py
 ├── error.py
-└── user.py
+├── health.py
+├── user.py
+└── version.py
 ```
 
 Schemas are responsible for:
 
-* request validation;
-* response serialization;
-* defining API contracts;
-* separating external API data from internal database models.
+request validation;
+response serialization;
+defining API contracts;
+separating external API data from internal database models.
 
 ---
 
@@ -343,22 +441,25 @@ Current implementation:
 
 ```text
 backend/src/parserhub/core/
+
 ├── config.py
 ├── constants.py
 ├── dependencies.py
 ├── exceptions.py
 ├── exception_handlers.py
-└── security.py
+├── security.py
+└── version.py
 ```
 
 Responsibilities include:
 
-* application configuration;
-* security utilities;
-* authentication dependencies;
-* application exceptions;
-* exception handling;
-* shared constants.
+application configuration;
+application version information;
+security utilities;
+authentication dependencies;
+application exceptions;
+exception handling;
+shared constants.
 
 ---
 
@@ -742,7 +843,7 @@ Model → API Schema   Not allowed
 
 ---
 
-# Testing Architecture
+## Testing Architecture
 
 Tests are organized according to the architectural boundaries they validate.
 
@@ -750,22 +851,44 @@ Current structure:
 
 ```text
 backend/tests/
-├── unit/
-│   ├── core/
-│   └── services/
+
+├── factories/
+│   └── user.py
+│
 ├── integration/
 │   ├── api/
+│   │   ├── v1/
+│   │   │   └── endpoints/
+│   │   │       ├── test_auth.py
+│   │   │       └── test_users.py
+│   │   ├── test_health.py
+│   │   └── test_version.py
 │   ├── db/
+│   │   ├── test_database.py
+│   │   └── test_unit_of_work.py
 │   ├── repositories/
+│   │   └── test_user.py
 │   └── services/
-└── factories/
+│       └── test_auth.py
+│
+├── unit/
+│   ├── core/
+│   │   ├── test_config.py
+│   │   ├── test_dependencies.py
+│   │   ├── test_exception_handlers.py
+│   │   ├── test_security.py
+│   │   └── test_version.py
+│   └── services/
+│       └── test_auth.py
+│
+└── conftest.py
 ```
 
 Unit tests validate components in isolation.
 
 Integration tests validate interactions between components and external infrastructure such as PostgreSQL.
 
-The test structure should generally reflect the structure and responsibilities of the application.
+API integration tests are organized according to the API structure they validate.
 
 ---
 
