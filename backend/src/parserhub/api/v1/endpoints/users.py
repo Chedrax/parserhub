@@ -19,6 +19,7 @@ current_user_dependency = Depends(get_current_user)
             "description": "Authentication is required or the access token is invalid.",
         },
     },
+    status_code=status.HTTP_200_OK,
 )
 async def get_current_user_info(
     current_user: User = current_user_dependency,

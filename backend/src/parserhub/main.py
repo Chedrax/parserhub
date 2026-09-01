@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.types import ExceptionHandler
 
-from parserhub.api.v1.router import router as v1_router
+from parserhub.api.router import router as api_router
 from parserhub.core.exception_handlers import (
     authentication_error_handler,
     inactive_user_handler,
@@ -25,7 +25,7 @@ app = FastAPI(
 )
 
 
-app.include_router(router=v1_router)
+app.include_router(router=api_router)
 
 
 app.add_exception_handler(
@@ -52,8 +52,3 @@ app.add_exception_handler(
     exc_class_or_status_code=RequestValidationError,
     handler=cast(ExceptionHandler, validation_error_handler),
 )
-
-
-@app.get("/health")
-async def health_check() -> dict[str, str]:
-    return {"status": "ok"}

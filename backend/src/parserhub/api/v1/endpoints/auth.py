@@ -37,6 +37,10 @@ auth_service_dependency = Depends(get_auth_service)
             "model": ErrorResponse,
             "description": "User with this email or username already exists",
         },
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
+            "model": ErrorResponse,
+            "description": "Request validation failed",
+        },
     },
 )
 async def register(
@@ -57,6 +61,7 @@ async def register(
 @router.post(
     path="/login",
     response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
     responses={
         status.HTTP_401_UNAUTHORIZED: {
             "model": ErrorResponse,
@@ -65,6 +70,10 @@ async def register(
         status.HTTP_403_FORBIDDEN: {
             "model": ErrorResponse,
             "description": "User account is inactive",
+        },
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
+            "model": ErrorResponse,
+            "description": "Request validation failed",
         },
     },
 )
