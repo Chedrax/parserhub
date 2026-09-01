@@ -5,6 +5,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+import parserhub.models  # noqa: F401 # type: ignore
 from alembic import context
 from parserhub.core.config import get_settings
 from parserhub.db.base import Base

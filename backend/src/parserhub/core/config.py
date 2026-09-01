@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     environment: Environment
     database_url: str
     secret_key: SecretStr
+    access_token_expire_minutes: int = 30
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",

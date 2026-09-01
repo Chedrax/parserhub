@@ -1,12 +1,10 @@
 import pytest
 from sqlalchemy import text
-
-from parserhub.db.session import async_session_factory
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_database_connection() -> None:
-    async with async_session_factory() as session:
-        result = await session.execute(statement=text(text="SELECT 1"))
+async def test_database_connection(db_session: AsyncSession) -> None:
+    result = await db_session.execute(statement=text(text="SELECT 1"))
 
     assert result.scalar_one() == 1

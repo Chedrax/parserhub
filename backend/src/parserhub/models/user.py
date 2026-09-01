@@ -14,8 +14,12 @@ from sqlalchemy.orm import (
     mapped_column,
 )
 
+from parserhub.core.constants import (
+    EMAIL_MAX_LENGTH,
+    USERNAME_MAX_LENGTH,
+)
 from parserhub.db.base import Base
-from parserhub.models.enums import UserRole
+from parserhub.models.enums import UserRole, enum_values
 
 
 class User(Base):
@@ -26,17 +30,18 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         Uuid,
         primary_key=True,
-        default=uuid.uuid4,
+        default_factory=uuid.uuid4,
+        init=False,
     )
 
     email: Mapped[str] = mapped_column(
-        String(length=320),
+        String(length=EMAIL_MAX_LENGTH),
         unique=True,
         nullable=False,
     )
 
     username: Mapped[str] = mapped_column(
-        String(length=50),
+        String(length=USERNAME_MAX_LENGTH),
         unique=True,
         nullable=False,
     )
@@ -47,11 +52,7 @@ class User(Base):
     )
 
     role: Mapped[UserRole] = mapped_column(
-        Enum(
-            enums=UserRole,
-            name="user_role",
-            native_enum=True,
-        ),
+        Enum(UserRole, name="user_role", native_enum=True, values_callable=enum_values),
         nullable=False,
         default=UserRole.USER,
         server_default=UserRole.USER.value,
@@ -67,12 +68,14 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
+        init=False,
         server_default=func.now(),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
+        init=False,
         server_default=func.now(),
         onupdate=func.now(),
     )
